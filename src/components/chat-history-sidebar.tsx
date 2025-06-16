@@ -73,9 +73,10 @@ export function ChatHistorySidebar({
         <Button
           variant="outline"
           className={cn(
+            "h-8", // Consistent height
             sidebarState === "expanded"
-              ? "w-full justify-start gap-2"
-              : "w-8 h-8 p-2 justify-center"
+              ? "w-full justify-start gap-2 px-2" // Explicit padding for expanded
+              : "w-8 justify-center p-0" // Icon-only size and padding for collapsed
           )}
           onClick={() => onNewChat()}
           title={sidebarState === "collapsed" ? "New Chat" : undefined}
@@ -115,7 +116,7 @@ export function ChatHistorySidebar({
                     className="justify-between w-full text-left"
                     tooltip={{ children: session.name, side: 'right', align: 'start' }}
                   >
-                    <div className="flex flex-1 items-center gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2 overflow-hidden min-w-0"> {/* REMOVED flex-1, ADDED min-w-0 */}
                        <MessageSquare />
                        {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
                     </div>
