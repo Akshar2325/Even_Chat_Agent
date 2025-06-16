@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { CodeBlock } from "@/components/code-block";
+import React from "react";
 
 interface ChatMessageItemProps {
   message: ChatMessage;
@@ -14,42 +15,51 @@ interface ChatMessageItemProps {
 export function ChatMessageItem({ message }: ChatMessageItemProps) {
   const isUser = message.sender === "user";
 
-  const renderContent = (content: string): React.ReactNode => {
-    // Regex to split by code blocks, keeping the delimiters (code blocks)
-    const parts = content.split(/(```(?:[a-zA-Z0-9_.-]*)\n(?:[\s\S]*?)\n```)/g);
-    // Example: "text1 ```lang\ncode``` text2"
-    // parts -> ["text1 ", "```lang\ncode```", " text2"]
+  const renderContent = (content: string): React.ReactNode[] => {
+    // Regex for full code blocks (```...```), captures the block
+    const blockCodeRegex = /(```(?:[a-zA-Z0-9_.-]*\n(?:[\s\S]*?)\n```))/g;
+    // Regex for inline code (`...`), captures the segment including backticks
+    const inlineCodeRegex = /(`[^`\n]+?`)/g; // Ensure it doesn't match across newlines for inline
 
-    // Filter out empty strings that can result from split if content starts/ends with a code block
-    const filteredParts = parts.filter(part => part.length > 0);
+    // Split by block code first
+    const parts = content.split(blockCodeRegex);
 
-    // Check if there are any code blocks after filtering
-    const hasCodeBlocks = filteredParts.some(part => part.startsWith('```') && part.endsWith('```'));
-
-    if (!hasCodeBlocks) {
-      // No code blocks, return content as is (will be wrapped by parent's whitespace-pre-wrap)
-      return content;
-    }
-
-    const codeBlockRegex = /^```(\w*)\n([\s\S]*?)\n```$/;
-
-    return filteredParts.map((part, index) => {
-      const match = codeBlockRegex.exec(part);
-      if (match) {
-        const lang = match[1];
-        const code = match[2];
-        // Add margin-top if this code block isn't the very first piece of content
-        const mt = index > 0 ? 'mt-2' : '';
+    return parts.map((part, index) => {
+      // Check if this part is a block code
+      const blockMatch = /^```(\w*)\n([\s\S]*?)\n```$/.exec(part);
+      if (blockMatch) {
+        const lang = blockMatch[1];
+        const code = blockMatch[2];
+        // Add margin-top if this code block isn't the very first piece of content and the previous part had visible text
+        const isFirstMeaningfulElement = index === 0 || (index > 0 && parts[index -1].trim() === '');
+        const mt = !isFirstMeaningfulElement ? 'mt-2' : '';
         return (
-          <div key={`code-${index}`} className={mt}>
+          <div key={`block-code-${index}`} className={mt}>
             <CodeBlock language={lang} code={code} />
           </div>
         );
-      } else {
-        // It's a text part. It will inherit whitespace-pre-wrap from the parent.
-        return <span key={`text-${index}`}>{part}</span>;
       }
-    });
+
+      // If not a block code, it's a text segment that might contain inline code
+      // Preserve newlines in text segments for whitespace-pre-wrap to handle
+      const textSegments = part.split(inlineCodeRegex).map((segment, segIndex) => {
+        if (segment.startsWith('`') && segment.endsWith('`') && !segment.includes('\n')) {
+          // It's an inline code segment
+          const inlineCodeContent = segment.slice(1, -1); // Remove backticks
+          return (
+            <code
+              key={`inline-code-${index}-${segIndex}`}
+              className="bg-muted px-1.5 py-0.5 rounded font-mono text-sm mx-0.5"
+            >
+              {inlineCodeContent}
+            </code>
+          );
+        }
+        // It's a plain text segment, return as is (React.Fragment needed for keys if segment is empty)
+        return <React.Fragment key={`text-${index}-${segIndex}`}>{segment}</React.Fragment>;
+      });
+      return textSegments; // This will be an array of nodes/strings
+    }).flat(); // Flatten the array of arrays/nodes
   };
 
 
@@ -84,9 +94,7 @@ export function ChatMessageItem({ message }: ChatMessageItemProps) {
       {isUser && (
         <Avatar className="h-8 w-8 shrink-0">
            <Image src="/icon.png" alt="User Icon" width={32} height={32} />
-          <AvatarFallback>
-            {/* Fallback for user icon if needed */}
-          </AvatarFallback>
+          <AvatarFallback></AvatarFallback>
         </Avatar>
       )}
     </div>
