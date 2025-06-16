@@ -10,13 +10,13 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { PlusCircle, MessageSquare, Trash2, Edit3, X, Check } from 'lucide-react';
-import { useSidebar } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 interface ChatHistorySidebarProps {
@@ -73,10 +73,10 @@ export function ChatHistorySidebar({
         <Button
           variant="outline"
           className={cn(
-            "h-8", // Consistent height
+            "h-8",
             sidebarState === "expanded"
-              ? "w-full justify-start gap-2 px-2" // Explicit padding for expanded
-              : "w-8 justify-center p-0" // Icon-only size and padding for collapsed
+              ? "w-full justify-start gap-2 px-2"
+              : "w-8 justify-center p-0"
           )}
           onClick={() => onNewChat()}
           title={sidebarState === "collapsed" ? "New Chat" : undefined}
@@ -116,7 +116,7 @@ export function ChatHistorySidebar({
                     className="justify-between w-full text-left"
                     tooltip={{ children: session.name, side: 'right', align: 'start' }}
                   >
-                    <div className="flex items-center gap-2 overflow-hidden min-w-0"> {/* REMOVED flex-1, ADDED min-w-0 */}
+                    <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0"> {/* Added flex-1 here */}
                        <MessageSquare />
                        {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
                     </div>
