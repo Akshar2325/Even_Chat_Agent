@@ -1,5 +1,19 @@
 
-export type AiModeId = 'general' | 'fixgrammar' | 'summarize' | 'formalize';
+export type AiModeId =
+  | 'general'
+  | 'fixgrammar'
+  | 'summarize'
+  | 'formalize'
+  | 'fixCode'
+  | 'optimizeCode'
+  | 'lintCode'
+  | 'explainCodeStepByStep'
+  | 'analyzeTimeComplexity'
+  | 'suggestDesignPattern'
+  | 'translateCode'
+  | 'generatePseudocode'
+  | 'suggestDockerfile'
+  | 'gitAssistant';
 
 export interface AiMode {
   id: AiModeId;
@@ -9,7 +23,7 @@ export interface AiMode {
 }
 
 export interface ChatMessage {
-  id: string;
+  id:string;
   sender: 'user' | 'ai';
   content: string;
   mode?: AiModeId;

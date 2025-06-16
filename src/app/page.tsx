@@ -13,7 +13,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { ChatMessageItem } from "@/components/chat-message-item";
 import { ModeSelector } from "@/components/mode-selector";
 import { ModeExplanationDialog } from "@/components/mode-explanation-dialog";
-import { Send, Sparkles, SpellCheck2, BookText, Briefcase, Loader2, MessageSquare } from "lucide-react";
+import {
+  Send, Sparkles, SpellCheck2, BookText, Briefcase, Loader2, MessageSquare,
+  Wrench, Zap, ScanLine, Milestone, Binary, Library, Languages, FileText, Container, GithubIcon
+} from "lucide-react";
 import {
   SidebarProvider,
   SidebarInset,
@@ -27,6 +30,16 @@ const AVAILABLE_MODES: AiMode[] = [
   { id: "fixgrammar", name: "Fix Grammar", description: "Improves grammar and clarity of your text.", icon: SpellCheck2 },
   { id: "summarize", name: "Summarize", description: "Condenses long text into a short summary.", icon: BookText },
   { id: "formalize", name: "Formalize", description: "Makes your text sound more professional.", icon: Briefcase },
+  { id: "fixCode", name: "Fix Code", description: "Auto-corrects syntax errors in code.", icon: Wrench },
+  { id: "optimizeCode", name: "Optimize Code", description: "Suggests performance/memory improvements for code.", icon: Zap },
+  { id: "lintCode", name: "Lint Code", description: "Flags style issues in code (e.g., PEP8, ESLint).", icon: ScanLine },
+  { id: "explainCodeStepByStep", name: "Explain Code", description: "Line-by-line breakdown of how code executes.", icon: Milestone },
+  { id: "analyzeTimeComplexity", name: "Time Complexity", description: "Analyzes Big-O notation of code.", icon: Binary },
+  { id: "suggestDesignPattern", name: "Design Patterns", description: "Suggests architectural patterns for code.", icon: Library },
+  { id: "translateCode", name: "Translate Code", description: "Converts code between programming languages.", icon: Languages },
+  { id: "generatePseudocode", name: "Pseudocode", description: "Generates pseudocode from real code.", icon: FileText },
+  { id: "suggestDockerfile", name: "Dockerize", description: "Suggests Dockerfile commands for an app.", icon: Container },
+  { id: "gitAssistant", name: "Git Assistant", description: "Helps with Git commands and scenarios.", icon: GithubIcon },
 ];
 
 const getModeById = (modeId: AiModeId): AiMode | undefined => AVAILABLE_MODES.find(m => m.id === modeId);
@@ -192,10 +205,13 @@ export default function ModeChatPage() {
         );
 
         const currentSession = chatSessions.find(s => s.id === currentSessionId);
-        if (currentSession && (currentSession.name === "Welcome Chat" || currentSession.name.startsWith("General Chat") || currentSession.name.startsWith("Fix Grammar Chat") || currentSession.name.startsWith("Summarize Chat") || currentSession.name.startsWith("Formalize Chat")) && currentSession.messages.filter(m => m.sender === 'user').length === 1) {
+        // More robust check for initial chat names
+        const modeName = getModeById(selectedMode)?.name || "Chat";
+        const isDefaultName = currentSession && (currentSession.name === "Welcome Chat" || currentSession.name.startsWith(`${modeName} Chat - `) || AVAILABLE_MODES.some(m => currentSession.name.startsWith(`${m.name} Chat - `)));
+
+        if (currentSession && isDefaultName && currentSession.messages.filter(m => m.sender === 'user').length === 1) {
             const firstUserMessage = currentInput.trim();
             const newNamePrefix = firstUserMessage.substring(0, 25) + (firstUserMessage.length > 25 ? "..." : "");
-            const modeName = getModeById(selectedMode)?.name || "Chat";
             handleRenameSession(currentSessionId, `${modeName}: ${newNamePrefix}`);
         }
 
