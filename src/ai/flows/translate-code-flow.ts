@@ -17,7 +17,7 @@ const TranslateCodeInputSchema = z.object({
 export type TranslateCodeInput = z.infer<typeof TranslateCodeInputSchema>;
 
 const TranslateCodeOutputSchema = z.object({
-  translatedCode: z.string().describe('The translated code, or an error message if translation is not possible.'),
+  translatedCode: z.string().describe('The translated code, formatted as a Markdown code block, or an error message if translation is not possible.'),
 });
 export type TranslateCodeOutput = z.infer<typeof TranslateCodeOutputSchema>;
 
@@ -32,7 +32,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert code translator. The user will provide text that includes the code to translate and the target programming language.
 Identify both the code snippet and the target language from the user's input.
 Translate the provided code snippet accurately to the target language.
-Respond ONLY with the translated code block.
+Respond ONLY with the translated code, formatted as a Markdown code block (e.g., \`\`\`language\ncode\n\`\`\`). If you can determine the language of the translated code, include it after the first set of triple backticks.
 If the target language is ambiguous, not specified, or not supported for translation from the source, state that you cannot perform the translation and briefly explain why.
 User's request:
 {{{text}}}`,
@@ -49,3 +49,4 @@ const translateCodeFlow = ai.defineFlow(
     return output!;
   }
 );
+
