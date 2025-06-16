@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import { CodeBlock } from "@/components/code-block";
 import React from "react";
+import { User } from "lucide-react";
 
 interface ChatMessageItemProps {
   message: ChatMessage;
@@ -92,8 +93,8 @@ export function ChatMessageItem({ message }: ChatMessageItemProps) {
         )}
       </div>
       {isUser && (
-        <Avatar className="h-8 w-8 shrink-0">
-           <Image src="/icon.png" alt="User Icon" width={32} height={32} />
+        <Avatar className="h-8 w-8 shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
+           <User className="h-5 w-5" />
           <AvatarFallback></AvatarFallback>
         </Avatar>
       )}
