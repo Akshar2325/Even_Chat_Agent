@@ -1,6 +1,6 @@
 # Even - AI Powered Chat Application
 
-**Even** is a modern, responsive chat application that leverages the power of AI to assist users in various text-based tasks. It features a clean interface, multiple AI modes, and persistent chat history.
+**Even** is a modern, responsive chat application that leverages the power of AI to assist users in various text-based tasks, including a comprehensive suite of tools for code analysis, debugging, and generation. It features a clean interface, multiple AI modes, and persistent chat history.
 
 <!-- Optional: Add a screenshot or GIF of your application here -->
 <!-- ![Even App Screenshot](https://placehold.co/800x450.png?text=Even+App+Screenshot) -->
@@ -17,12 +17,23 @@
     *   **Fix Grammar**: Improve grammar and clarity of your text.
     *   **Summarize**: Condense long text into concise summaries.
     *   **Formalize**: Make your text sound more professional.
+    *   **Fix Code**: Auto-corrects syntax errors in code snippets.
+    *   **Optimize Code**: Suggests performance and memory improvements for code.
+    *   **Lint Code**: Flags style issues (e.g., PEP8, ESLint) in code.
+    *   **Explain Code**: Provides a line-by-line or block-by-block breakdown of code execution.
+    *   **Time Complexity**: Analyzes the Big-O notation of code.
+    *   **Design Patterns**: Suggests relevant architectural design patterns for code.
+    *   **Translate Code**: Converts code snippets between programming languages.
+    *   **Pseudocode**: Generates pseudocode from real code.
+    *   **Dockerize**: Suggests Dockerfile commands to containerize an application.
+    *   **Git Assistant**: Helps with Git commands and scenarios.
 *   **Persistent Chat History**: Sessions are saved to LocalStorage, allowing users to continue conversations later.
 *   **Session Management**: Create new chats, rename existing chats, and delete chats.
 *   **Responsive Design**: Adapts seamlessly to various screen sizes, from mobile to desktop.
-*   **Collapsible Sidebar**: Easily manage and navigate through chat history.
+*   **Collapsible Sidebar**: Easily manage and navigate through chat history with an expandable/collapsible sidebar.
 *   **Theme Toggle**: Switch between Light and Dark modes.
 *   **Real-time AI Interaction**: Uses Next.js Server Actions for smooth communication with the AI backend.
+*   **Formatted Code Display**: Renders code blocks with syntax highlighting and a copy-to-clipboard button.
 
 ## 🛠️ Tech Stack
 
