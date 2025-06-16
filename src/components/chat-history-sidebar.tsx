@@ -115,9 +115,9 @@ export function ChatHistorySidebar({
                     className="justify-between w-full text-left"
                     tooltip={{ children: session.name, side: 'right', align: 'start' }}
                   >
-                    <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="flex flex-1 items-center gap-2 overflow-hidden"> {/* Added flex-1 here */}
                        <MessageSquare />
-                       {sidebarState === "expanded" && <span className="truncate flex-grow">{session.name}</span>}
+                       {sidebarState === "expanded" && <span className="truncate">{session.name}</span>} {/* Removed flex-grow here */}
                     </div>
                     {sidebarState === "expanded" && (
                        <div className="flex shrink-0">
