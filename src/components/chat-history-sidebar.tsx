@@ -76,7 +76,7 @@ export function ChatHistorySidebar({
             "h-8",
             sidebarState === "expanded"
               ? "w-full justify-start gap-2 px-2"
-              : "w-8 justify-center p-0"
+              : "w-8 justify-center p-0 h-8" 
           )}
           onClick={() => onNewChat()}
           title={sidebarState === "collapsed" ? "New Chat" : undefined}
@@ -110,25 +110,28 @@ export function ChatHistorySidebar({
                     </Button>
                   </div>
                 ) : (
-                  <SidebarMenuButton
-                    onClick={() => handleSelectSession(session.id)}
-                    isActive={session.id === currentSessionId}
-                    className="justify-between w-full text-left"
-                    tooltip={{ children: session.name, side: 'right', align: 'start' }}
-                  >
-                    <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0"> {/* Added flex-1 here */}
-                       <MessageSquare />
-                       {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
-                    </div>
+                  <>
+                    <SidebarMenuButton
+                      onClick={() => handleSelectSession(session.id)}
+                      isActive={session.id === currentSessionId}
+                      className="w-full text-left pr-16" // Added padding-right to make space for absolute buttons
+                      tooltip={{ children: session.name, side: 'right', align: 'start' }}
+                    >
+                      <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
+                         <MessageSquare />
+                         {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
+                      </div>
+                    </SidebarMenuButton>
+                    
                     {sidebarState === "expanded" && (
-                       <div className="flex shrink-0">
-                         <Button asChild variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startRename(session);}} className="h-7 w-7">
-                           <span><Edit3 className="h-3.5 w-3.5" /></span>
+                       <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex shrink-0 items-center">
+                         <Button asChild variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startRename(session);}} className="h-7 w-7 p-1">
+                           <span><Edit3 className="h-4 w-4" /></span>
                          </Button>
                          <Dialog>
                             <DialogTrigger asChild>
-                              <Button asChild variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive">
-                                <span><Trash2 className="h-3.5 w-3.5" /></span>
+                              <Button asChild variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="h-7 w-7 p-1 hover:bg-destructive/10 hover:text-destructive">
+                                <span><Trash2 className="h-4 w-4" /></span>
                               </Button>
                             </DialogTrigger>
                             <DialogContent>
@@ -148,7 +151,7 @@ export function ChatHistorySidebar({
                          </Dialog>
                       </div>
                     )}
-                  </SidebarMenuButton>
+                  </>
                 )}
               </SidebarMenuItem>
             ))}
