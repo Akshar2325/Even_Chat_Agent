@@ -67,8 +67,8 @@ export function ChatMessageItem({ message }: ChatMessageItemProps) {
   return (
     <div
       className={cn(
-        "flex items-start gap-3 py-4",
-        isUser ? "justify-end" : "justify-start"
+        "flex gap-3 py-4",
+        isUser ? "justify-end items-center" : "justify-start items-start"
       )}
     >
       {!isUser && (
@@ -93,9 +93,10 @@ export function ChatMessageItem({ message }: ChatMessageItemProps) {
         )}
       </div>
       {isUser && (
-        <Avatar className="h-8 w-8 shrink-0 flex items-center justify-center bg-muted text-muted-foreground">
-           <User className="h-5 w-5" />
-          <AvatarFallback></AvatarFallback>
+        <Avatar className="h-8 w-8 shrink-0">
+           <AvatarFallback className="bg-muted text-muted-foreground">
+            <User className="h-5 w-5" />
+          </AvatarFallback>
         </Avatar>
       )}
     </div>
