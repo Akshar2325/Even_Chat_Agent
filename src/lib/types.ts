@@ -1,19 +1,19 @@
-
 export type AiModeId =
-  | 'general'
-  | 'fixgrammar'
-  | 'summarize'
-  | 'formalize'
-  | 'fixCode'
-  | 'optimizeCode'
-  | 'lintCode'
-  | 'explainCodeStepByStep'
-  | 'analyzeTimeComplexity'
-  | 'suggestDesignPattern'
-  | 'translateCode'
-  | 'generatePseudocode'
-  | 'suggestDockerfile'
-  | 'gitAssistant';
+  | "general"
+  | "fixgrammar"
+  | "summarize"
+  | "formalize"
+  | "fixCode"
+  | "optimizeCode"
+  | "lintCode"
+  | "explainCodeStepByStep"
+  | "analyzeTimeComplexity"
+  | "suggestDesignPattern"
+  | "translateCode"
+  | "generatePseudocode"
+  | "suggestDockerfile"
+  | "gitAssistant"
+  | "commitMessageFormatter";
 
 export interface AiMode {
   id: AiModeId;
@@ -23,8 +23,8 @@ export interface AiMode {
 }
 
 export interface ChatMessage {
-  id:string;
-  sender: 'user' | 'ai';
+  id: string;
+  sender: "user" | "ai";
   content: string;
   mode?: AiModeId;
   timestamp: number;

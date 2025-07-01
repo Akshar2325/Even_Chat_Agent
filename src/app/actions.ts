@@ -1,4 +1,3 @@
-
 "use server";
 
 import type { AiModeId, ChatMessage } from "@/lib/types";
@@ -16,7 +15,7 @@ import { translateCode } from "@/ai/flows/translate-code-flow";
 import { generatePseudocode } from "@/ai/flows/generate-pseudocode-flow";
 import { suggestDockerfile } from "@/ai/flows/suggest-dockerfile-flow";
 import { gitAssistant } from "@/ai/flows/git-assistant-flow";
-
+import { commitMessageFormatter } from "@/ai/flows/commit-message-formatter-flow";
 
 export async function handleAiInteraction(
   userInput: string,
@@ -46,7 +45,9 @@ export async function handleAiInteraction(
         const explainResult = await explainCodeStepByStep({ text: userInput });
         return explainResult.explanation;
       case "analyzeTimeComplexity":
-        const complexityResult = await analyzeTimeComplexity({ text: userInput });
+        const complexityResult = await analyzeTimeComplexity({
+          text: userInput,
+        });
         return complexityResult.analysis;
       case "suggestDesignPattern":
         const patternResult = await suggestDesignPattern({ text: userInput });
@@ -64,6 +65,11 @@ export async function handleAiInteraction(
       case "gitAssistant":
         const gitResult = await gitAssistant({ scenario: userInput });
         return gitResult.suggestion;
+      case "commitMessageFormatter":
+        const commitResult = await commitMessageFormatter({
+          rawDescription: userInput,
+        });
+        return commitResult.formattedMessage;
       case "general":
       default:
         const generalResult = await generalChat({ text: userInput });
@@ -73,6 +79,8 @@ export async function handleAiInteraction(
     console.error("AI interaction error:", error);
     // It's better to throw a custom error or a more specific error message
     // that can be caught and displayed nicely on the client.
-    throw new Error("An error occurred while processing your request with the AI.");
+    throw new Error(
+      "An error occurred while processing your request with the AI."
+    );
   }
 }

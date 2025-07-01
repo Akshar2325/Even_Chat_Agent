@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -11,8 +10,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Briefcase, BookText, SpellCheck2, Sparkles, type LucideIcon,
-  Wrench, Zap, ScanLine, Milestone, Binary, Library, Languages, FileText, Container, GithubIcon
+  Briefcase,
+  BookText,
+  SpellCheck2,
+  Sparkles,
+  type LucideIcon,
+  Wrench,
+  Zap,
+  ScanLine,
+  Milestone,
+  Binary,
+  Library,
+  Languages,
+  FileText,
+  Container,
+  GithubIcon,
+  MessageCircle,
 } from "lucide-react";
 
 interface ModeSelectorProps {
@@ -36,11 +49,19 @@ const modeIcons: Record<AiModeId, LucideIcon> = {
   generatePseudocode: FileText,
   suggestDockerfile: Container,
   gitAssistant: GithubIcon,
+  commitMessageFormatter: MessageCircle,
 };
 
-export function ModeSelector({ selectedMode, onModeChange, modes }: ModeSelectorProps) {
+export function ModeSelector({
+  selectedMode,
+  onModeChange,
+  modes,
+}: ModeSelectorProps) {
   return (
-    <Select value={selectedMode} onValueChange={(value) => onModeChange(value as AiModeId)}>
+    <Select
+      value={selectedMode}
+      onValueChange={(value) => onModeChange(value as AiModeId)}
+    >
       <SelectTrigger className="w-auto min-w-[160px] shrink-0 md:min-w-[180px]">
         {/*
           The SelectValue component renders the content of the selected SelectItem.
