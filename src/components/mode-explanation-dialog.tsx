@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -26,21 +25,34 @@ export function ModeExplanationDialog({ modes }: ModeExplanationDialogProps) {
           <HelpCircle className="h-5 w-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Understanding Modes</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[90vw] max-w-md mx-auto p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-lg sm:text-xl">
+            Understanding Modes
+          </DialogTitle>
+          <DialogDescription className="text-sm">
             Choose a mode to tailor the AI's response to your needs.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4 py-2 sm:py-4">
           {modes.map((mode) => (
-            <div key={mode.id} className="grid grid-cols-[auto_1fr] items-start gap-3">
-              {mode.icon && React.createElement(mode.icon, { className: "h-5 w-5 mt-1 text-primary" })}
-              {!mode.icon && <div className="h-5 w-5 mt-1"></div>}
+            <div
+              key={mode.id}
+              className="grid grid-cols-[auto_1fr] items-start gap-2 sm:gap-3 pb-2 border-b last:border-b-0"
+            >
+              <div className="flex justify-center items-center w-8 h-8">
+                {mode.icon &&
+                  React.createElement(mode.icon, {
+                    className: "h-5 w-5 text-primary",
+                  })}
+              </div>
               <div>
-                <h3 className="font-semibold">{mode.name}</h3>
-                <p className="text-sm text-muted-foreground">{mode.description}</p>
+                <h3 className="font-semibold text-sm sm:text-base">
+                  {mode.name}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {mode.description}
+                </p>
               </div>
             </div>
           ))}
