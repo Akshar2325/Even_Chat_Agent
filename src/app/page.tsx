@@ -39,6 +39,7 @@ import {
   Container,
   GithubIcon,
   MessageCircle,
+  Lightbulb, // Import Lightbulb icon
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -138,6 +139,12 @@ const AVAILABLE_MODES: AiMode[] = [
     description:
       "Formats raw commit descriptions into proper Conventional Commit messages.",
     icon: MessageCircle,
+  },
+  {
+    id: "improvePrompt",
+    name: "Prompt Engineer",
+    description: "Enhances prompts to get better results from AI systems.",
+    icon: Lightbulb,
   },
 ];
 

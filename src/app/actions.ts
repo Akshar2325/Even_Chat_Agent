@@ -16,6 +16,7 @@ import { generatePseudocode } from "@/ai/flows/generate-pseudocode-flow";
 import { suggestDockerfile } from "@/ai/flows/suggest-dockerfile-flow";
 import { gitAssistant } from "@/ai/flows/git-assistant-flow";
 import { commitMessageFormatter } from "@/ai/flows/commit-message-formatter-flow";
+import { improvePrompt } from "@/ai/flows/improve-prompt-flow";
 
 export async function handleAiInteraction(
   userInput: string,
@@ -70,6 +71,9 @@ export async function handleAiInteraction(
           rawDescription: userInput,
         });
         return commitResult.formattedMessage;
+      case "improvePrompt":
+        const promptResult = await improvePrompt({ text: userInput });
+        return promptResult.improvedPrompt;
       case "general":
       default:
         const generalResult = await generalChat({ text: userInput });

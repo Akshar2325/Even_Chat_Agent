@@ -13,7 +13,8 @@ export type AiModeId =
   | "generatePseudocode"
   | "suggestDockerfile"
   | "gitAssistant"
-  | "commitMessageFormatter";
+  | "commitMessageFormatter"
+  | "improvePrompt";
 
 export interface AiMode {
   id: AiModeId;

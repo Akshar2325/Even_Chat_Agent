@@ -26,6 +26,7 @@ import {
   Container,
   GithubIcon,
   MessageCircle,
+  Lightbulb,
 } from "lucide-react";
 
 interface ModeSelectorProps {
@@ -50,6 +51,7 @@ const modeIcons: Record<AiModeId, LucideIcon> = {
   suggestDockerfile: Container,
   gitAssistant: GithubIcon,
   commitMessageFormatter: MessageCircle,
+  improvePrompt: Lightbulb,
 };
 
 export function ModeSelector({
