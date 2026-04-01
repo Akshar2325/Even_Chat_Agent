@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import type { ChatMessage, AiModeId, AiMode, ChatSession } from "@/lib/types";
-import { handleAiInteractionStream } from "./actions";
+import { handleAiInteractionStream, type AiModifier } from "./actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ChatMessageItem } from "@/components/chat-message-item";
 import { ModeSelector } from "@/components/mode-selector";
@@ -288,7 +288,7 @@ export default function ModeChatPage() {
         const initialAiMessage: ChatMessage = {
           id: aiMessageId,
           sender: "ai",
-          content: "",
+          content: "...",
           reasoning: undefined,
           mode: selectedMode,
           modelId: selectedModelId,
@@ -393,6 +393,106 @@ export default function ModeChatPage() {
     });
   };
 
+  const handleRetry = async (messageId: string, modifier?: AiModifier) => {
+    if (!currentSessionId) return;
+
+    const currentSession = chatSessions.find((s) => s.id === currentSessionId);
+    if (!currentSession) return;
+
+    const messageIndex = currentSession.messages.findIndex((m) => m.id === messageId);
+    if (messageIndex === -1) return;
+
+    let lastUserMessage = "";
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (currentSession.messages[i].sender === "user") {
+        lastUserMessage = currentSession.messages[i].content;
+        break;
+      }
+    }
+
+    if (!lastUserMessage) return;
+
+    setChatSessions((prevSessions) =>
+      prevSessions.map((s) =>
+        s.id === currentSessionId
+          ? {
+              ...s,
+              messages: s.messages.map((m) =>
+                m.id === messageId
+                  ? { ...m, content: "...", reasoning: undefined }
+                  : m
+              ),
+            }
+          : s
+      )
+    );
+
+    startTransition(async () => {
+      try {
+        const stream = await handleAiInteractionStream(
+          lastUserMessage,
+          selectedMode,
+          selectedModelId,
+          modifier
+        );
+
+        let fullRawContent = "";
+        for await (const chunk of stream) {
+          fullRawContent += chunk;
+
+          let displayContent = fullRawContent;
+          let displayReasoning = "";
+
+          const thinkStartIdx = fullRawContent.indexOf("<think>");
+          if (thinkStartIdx !== -1) {
+             const parts = fullRawContent.split("<think>");
+             const afterThink = parts[1] || "";
+             
+             const thinkEndIdx = afterThink.indexOf("</think>");
+             if (thinkEndIdx !== -1) {
+                const subParts = afterThink.split("</think>");
+                displayReasoning = subParts[0];
+                displayContent = parts[0] + (subParts[1] || "");
+             } else {
+                displayReasoning = afterThink;
+                displayContent = parts[0];
+             }
+          }
+
+          setChatSessions((prevSessions) =>
+            prevSessions.map((s) => {
+              if (s.id !== currentSessionId) return s;
+              return {
+                ...s,
+                messages: s.messages.map((m) => 
+                  m.id === messageId ? 
+                    { ...m, content: displayContent, reasoning: displayReasoning || undefined } 
+                    : m
+                )
+              };
+            })
+          );
+        }
+      } catch (error) {
+        console.error("AI retry error:", error);
+        setChatSessions((prevSessions) =>
+          prevSessions.map((s) =>
+            s.id === currentSessionId
+              ? {
+                  ...s,
+                  messages: s.messages.map((m) =>
+                    m.id === messageId
+                      ? { ...m, content: "Sorry, I couldn't process the retry. Please try again.", reasoning: undefined }
+                      : m
+                  ),
+                }
+              : s
+          )
+        );
+      }
+    });
+  };
+
   const handleModeChange = (newMode: AiModeId) => {
     setSelectedMode(newMode);
     if (currentSessionId) {
@@ -426,7 +526,7 @@ export default function ModeChatPage() {
         onRenameSession={handleRenameSession}
       />
       <SidebarInset>
-        <div className="flex flex-col h-full bg-background">
+        <div className="flex flex-col h-svh bg-background overflow-hidden">
           {/* Gradient accent line */}
           <div className="header-gradient-line" />
 
@@ -461,7 +561,7 @@ export default function ModeChatPage() {
               className="h-full px-4 py-2"
               ref={scrollAreaRef as React.RefObject<HTMLDivElement>}
             >
-              <div className="max-w-3xl mx-auto space-y-1 pb-4">
+              <div className="max-w-2xl mx-auto space-y-1 pb-4">
                 {messages.map((msg) => {
                   const isGenerating = msg.sender === "ai" && !msg.content && !msg.reasoning && isPending;
                   if (isGenerating) {
@@ -476,7 +576,7 @@ export default function ModeChatPage() {
                             className="rounded-lg"
                           />
                         </div>
-                        <div className="ai-message-bubble rounded-2xl px-5 py-4 shadow-sm">
+                        <div className="ai-message-bubble rounded-2xl px-5 py-4 shadow-sm max-w-xl">
                           <div className="thinking-dots">
                             <span></span>
                             <span></span>
@@ -486,7 +586,7 @@ export default function ModeChatPage() {
                       </div>
                     );
                   }
-                  return <ChatMessageItem key={msg.id} message={msg} />;
+                  return <ChatMessageItem key={msg.id} message={msg} onRetry={handleRetry} />;
                 })}
                 {!currentSessionId &&
                   !isPending &&
@@ -507,7 +607,7 @@ export default function ModeChatPage() {
           <footer className="px-4 pb-4 pt-3 border-t border-border/50 bg-background/80 backdrop-blur-xl sticky bottom-0 z-10">
             <form
               onSubmit={handleSubmit}
-              className="max-w-3xl mx-auto"
+              className="max-w-2xl mx-auto"
             >
               {/* Input */}
               <div className="input-glow rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-200 shadow-sm">

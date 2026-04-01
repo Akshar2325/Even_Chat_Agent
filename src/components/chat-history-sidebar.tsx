@@ -121,7 +121,7 @@ export function ChatHistorySidebar({
                       tooltip={{ children: session.name, side: 'right', align: 'start' }}
                     >
                       <MessageSquare />
-                      {sidebarState === "expanded" && <span>{session.name}</span>}
+                      {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
                     </SidebarMenuButton>
                     
                     {sidebarState === "expanded" && (

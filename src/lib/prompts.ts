@@ -20,6 +20,10 @@ export const SYSTEM_PROMPTS: Record<AiModeId, string> = {
 
 ## Response Guidelines
 
+### Reasoning & Thought Process
+- If the user's query is complex or requires multi-step logic, please encapsulate your internal chain-of-thought within \`<think>\` ... \`</think>\` tags BEFORE providing the final answer.
+- Ensure your internal reasoning is thorough, considers edge cases, and provides a clear path to the final solution.
+
 ### Formatting & Structure
 - Use **Markdown** formatting extensively to structure your answers clearly:
   - Use headings (\`##\`, \`###\`) to organize long responses into logical sections.
