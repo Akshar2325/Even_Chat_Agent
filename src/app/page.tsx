@@ -15,11 +15,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import type { ChatMessage, AiModeId, AiMode, ChatSession } from "@/lib/types";
-import { handleAiInteraction } from "./actions";
+import { handleAiInteractionStream } from "./actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ChatMessageItem } from "@/components/chat-message-item";
 import { ModeSelector } from "@/components/mode-selector";
+import { ModelSelector } from "@/components/model-selector";
 import { ModeExplanationDialog } from "@/components/mode-explanation-dialog";
+import { DEFAULT_MODEL_ID } from "@/lib/models";
 import {
   Send,
   Sparkles,
@@ -39,7 +41,7 @@ import {
   Container,
   GithubIcon,
   MessageCircle,
-  Lightbulb, // Import Lightbulb icon
+  Lightbulb,
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -62,40 +64,10 @@ const AVAILABLE_MODES: AiMode[] = [
     icon: SpellCheck2,
   },
   {
-    id: "summarize",
-    name: "Summarize",
-    description: "Condenses long text into a short summary.",
-    icon: BookText,
-  },
-  {
     id: "formalize",
     name: "Formalize",
     description: "Makes your text sound more professional.",
     icon: Briefcase,
-  },
-  {
-    id: "fixCode",
-    name: "Fix Code",
-    description: "Auto-corrects syntax errors in code.",
-    icon: Wrench,
-  },
-  {
-    id: "optimizeCode",
-    name: "Optimize Code",
-    description: "Suggests performance/memory improvements for code.",
-    icon: Zap,
-  },
-  {
-    id: "lintCode",
-    name: "Lint Code",
-    description: "Flags style issues in code (e.g., PEP8, ESLint).",
-    icon: ScanLine,
-  },
-  {
-    id: "explainCodeStepByStep",
-    name: "Explain Code",
-    description: "Line-by-line breakdown of how code executes.",
-    icon: Milestone,
   },
   {
     id: "analyzeTimeComplexity",
@@ -104,28 +76,16 @@ const AVAILABLE_MODES: AiMode[] = [
     icon: Binary,
   },
   {
+    id: "explainCodeStepByStep",
+    name: "Explain Code",
+    description: "Line-by-line breakdown of how code executes.",
+    icon: Milestone,
+  },
+  {
     id: "suggestDesignPattern",
     name: "Design Patterns",
     description: "Suggests architectural patterns for code.",
     icon: Library,
-  },
-  {
-    id: "translateCode",
-    name: "Translate Code",
-    description: "Converts code between programming languages.",
-    icon: Languages,
-  },
-  {
-    id: "generatePseudocode",
-    name: "Pseudocode",
-    description: "Generates pseudocode from real code.",
-    icon: FileText,
-  },
-  {
-    id: "suggestDockerfile",
-    name: "Dockerize",
-    description: "Suggests Dockerfile commands for an app.",
-    icon: Container,
   },
   {
     id: "gitAssistant",
@@ -156,6 +116,7 @@ export default function ModeChatPage() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedMode, setSelectedMode] = useState<AiModeId>("general");
+  const [selectedModelId, setSelectedModelId] = useState<string>(DEFAULT_MODEL_ID);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -171,7 +132,7 @@ export default function ModeChatPage() {
       const newSessionId = "session-" + Date.now();
       const mode = getModeById(modeId) || AVAILABLE_MODES[0];
       const initialMessageContent = isInitial
-        ? "Welcome to Even! Select a mode or start typing."
+        ? "Welcome to Even! I'm your AI assistant — select a mode and model, then start chatting. ✨"
         : `New ${mode.name} chat started. What can I help you with?`;
 
       const newSession: ChatSession = {
@@ -219,12 +180,14 @@ export default function ModeChatPage() {
               (s) => s.id === storedCurrentId
             );
             setSelectedMode(currentSession?.mode || "general");
+            setSelectedModelId(currentSession?.modelId || DEFAULT_MODEL_ID);
           } else {
             const sortedSessions = [...parsedSessions].sort(
               (a, b) => b.createdAt - a.createdAt
             );
             setCurrentSessionId(sortedSessions[0].id);
             setSelectedMode(sortedSessions[0].mode || "general");
+            setSelectedModelId(sortedSessions[0].modelId || DEFAULT_MODEL_ID);
           }
         } else {
           handleNewChat(true);
@@ -234,7 +197,7 @@ export default function ModeChatPage() {
       }
     } catch (error) {
       console.error("Failed to load chat sessions from localStorage:", error);
-      handleNewChat(true); // Fallback to a new chat
+      handleNewChat(true);
     }
   }, [handleNewChat]);
 
@@ -261,6 +224,7 @@ export default function ModeChatPage() {
     if (session) {
       setCurrentSessionId(sessionId);
       setSelectedMode(session.mode || "general");
+      setSelectedModelId(session.modelId || DEFAULT_MODEL_ID);
     }
   };
 
@@ -297,13 +261,14 @@ export default function ModeChatPage() {
       sender: "user",
       content: inputValue.trim(),
       mode: selectedMode,
+      modelId: selectedModelId,
       timestamp: Date.now(),
     };
 
     setChatSessions((prevSessions) =>
       prevSessions.map((s) =>
         s.id === currentSessionId
-          ? { ...s, messages: [...s.messages, userMessage], mode: selectedMode }
+          ? { ...s, messages: [...s.messages, userMessage], mode: selectedMode, modelId: selectedModelId }
           : s
       )
     );
@@ -313,29 +278,72 @@ export default function ModeChatPage() {
 
     startTransition(async () => {
       try {
-        const aiResponseContent = await handleAiInteraction(
+        const stream = await handleAiInteractionStream(
           currentInput.trim(),
-          selectedMode
+          selectedMode,
+          selectedModelId
         );
-        const aiMessage: ChatMessage = {
-          id: "ai-" + Date.now(),
+
+        const aiMessageId = "ai-" + Date.now();
+        const initialAiMessage: ChatMessage = {
+          id: aiMessageId,
           sender: "ai",
-          content: aiResponseContent,
+          content: "",
+          reasoning: undefined,
           mode: selectedMode,
+          modelId: selectedModelId,
           timestamp: Date.now(),
         };
+
         setChatSessions((prevSessions) =>
           prevSessions.map((s) =>
             s.id === currentSessionId
-              ? { ...s, messages: [...s.messages, aiMessage] }
+              ? { ...s, messages: [...s.messages, initialAiMessage] }
               : s
           )
         );
 
+        let fullRawContent = "";
+        for await (const chunk of stream) {
+          fullRawContent += chunk;
+
+          let displayContent = fullRawContent;
+          let displayReasoning = "";
+
+          const thinkStartIdx = fullRawContent.indexOf("<think>");
+          if (thinkStartIdx !== -1) {
+             const parts = fullRawContent.split("<think>");
+             const afterThink = parts[1] || "";
+             
+             const thinkEndIdx = afterThink.indexOf("</think>");
+             if (thinkEndIdx !== -1) {
+                const subParts = afterThink.split("</think>");
+                displayReasoning = subParts[0];
+                displayContent = parts[0] + (subParts[1] || "");
+             } else {
+                displayReasoning = afterThink;
+                displayContent = parts[0];
+             }
+          }
+
+          setChatSessions((prevSessions) =>
+            prevSessions.map((s) => {
+              if (s.id !== currentSessionId) return s;
+              return {
+                ...s,
+                messages: s.messages.map((m) => 
+                  m.id === aiMessageId ? 
+                    { ...m, content: displayContent, reasoning: displayReasoning || undefined } 
+                    : m
+                )
+              };
+            })
+          );
+        }
+
         const currentSession = chatSessions.find(
           (s) => s.id === currentSessionId
         );
-        // More robust check for initial chat names
         const modeName = getModeById(selectedMode)?.name || "Chat";
         const isDefaultName =
           currentSession &&
@@ -396,6 +404,17 @@ export default function ModeChatPage() {
     }
   };
 
+  const handleModelChange = (newModelId: string) => {
+    setSelectedModelId(newModelId);
+    if (currentSessionId) {
+      setChatSessions((prevSessions) =>
+        prevSessions.map((s) =>
+          s.id === currentSessionId ? { ...s, modelId: newModelId } : s
+        )
+      );
+    }
+  };
+
   return (
     <SidebarProvider defaultOpen={true}>
       <ChatHistorySidebar
@@ -408,70 +427,97 @@ export default function ModeChatPage() {
       />
       <SidebarInset>
         <div className="flex flex-col h-full bg-background">
-          <header className="flex items-center justify-between p-4 border-b sticky top-0 z-10 bg-background">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger />
-              <Image
-                src="/icon.png"
-                alt="Even App Icon"
-                width={32}
-                height={32}
-                priority
-              />
-              <h1 className="text-xl font-semibold font-headline">Even</h1>
+          {/* Gradient accent line */}
+          <div className="header-gradient-line" />
+
+          {/* Header */}
+          <header className="flex items-center justify-between px-5 py-3 border-b border-border/50 sticky top-0 z-10 bg-background/80 backdrop-blur-xl">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="hover:bg-muted/50 transition-colors" />
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <Image
+                    src="/icon.png"
+                    alt="Even App Icon"
+                    width={32}
+                    height={32}
+                    priority
+                    className="rounded-lg shadow-md"
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-background" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold gradient-text leading-tight">Even</h1>
+                  <p className="text-[10px] text-muted-foreground leading-tight">AI Chat Agent</p>
+                </div>
+              </div>
             </div>
             <ThemeToggle />
           </header>
 
+          {/* Messages */}
           <main className="flex-1 overflow-hidden">
             <ScrollArea
-              className="h-full p-4"
+              className="h-full px-4 py-2"
               ref={scrollAreaRef as React.RefObject<HTMLDivElement>}
             >
-              <div className="max-w-3xl mx-auto space-y-2 pb-4">
-                {messages.map((msg) => (
-                  <ChatMessageItem key={msg.id} message={msg} />
-                ))}
-                {isPending && (
-                  <div className="flex justify-start items-start gap-3 py-4">
-                    <div className="h-10 w-10 shrink-0 relative">
-                      <Image
-                        src="/icon.png"
-                        alt="AI Icon"
-                        layout="fill"
-                        objectFit="contain"
-                      />
-                    </div>
-                    <div className="bg-card text-card-foreground rounded-lg p-3 shadow-md">
-                      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-                    </div>
-                  </div>
-                )}
+              <div className="max-w-3xl mx-auto space-y-1 pb-4">
+                {messages.map((msg) => {
+                  const isGenerating = msg.sender === "ai" && !msg.content && !msg.reasoning && isPending;
+                  if (isGenerating) {
+                    return (
+                      <div key={msg.id} className="flex justify-start items-start gap-3 py-3 animate-message-in">
+                        <div className="h-9 w-9 shrink-0 relative">
+                          <Image
+                            src="/icon.png"
+                            alt="AI Icon"
+                            fill
+                            style={{ objectFit: 'contain' }}
+                            className="rounded-lg"
+                          />
+                        </div>
+                        <div className="ai-message-bubble rounded-2xl px-5 py-4 shadow-sm">
+                          <div className="thinking-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return <ChatMessageItem key={msg.id} message={msg} />;
+                })}
                 {!currentSessionId &&
                   !isPending &&
                   chatSessions.length === 0 && (
-                    <div className="text-center text-muted-foreground pt-10">
-                      <MessageSquare size={48} className="mx-auto mb-2" />
-                      No chats yet. Start a new one!
+                    <div className="text-center text-muted-foreground pt-20 animate-fade-in">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+                        <MessageSquare size={32} className="text-primary" />
+                      </div>
+                      <p className="text-lg font-medium">No chats yet</p>
+                      <p className="text-sm mt-1">Start a new conversation to get going!</p>
                     </div>
                   )}
               </div>
             </ScrollArea>
           </main>
 
-          <footer className="p-4 border-t bg-background sticky bottom-0 z-10">
+          {/* Footer / Input Area */}
+          <footer className="px-4 pb-4 pt-3 border-t border-border/50 bg-background/80 backdrop-blur-xl sticky bottom-0 z-10">
             <form
               onSubmit={handleSubmit}
-              className="max-w-3xl mx-auto flex items-end gap-2"
+              className="max-w-3xl mx-auto"
             >
-              <div className="flex-1 grid gap-2">
+              {/* Input */}
+              <div className="input-glow rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-200 shadow-sm">
                 <Textarea
                   value={inputValue}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
                     setInputValue(e.target.value)
                   }
                   placeholder="Type your message..."
-                  className="min-h-[60px] resize-none"
+                  className="min-h-[56px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl px-4 py-3 text-sm"
                   rows={1}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
@@ -482,27 +528,36 @@ export default function ModeChatPage() {
                   aria-label="Chat message input"
                   disabled={!currentSessionId || isPending}
                 />
-                <div className="flex items-center justify-between gap-2">
-                  <ModeSelector
-                    selectedMode={selectedMode}
-                    onModeChange={handleModeChange}
-                    modes={AVAILABLE_MODES}
-                  />
-                  <ModeExplanationDialog modes={AVAILABLE_MODES} />
+
+                {/* Bottom bar with selectors */}
+                <div className="flex items-center justify-between px-3 pb-2">
+                  <div className="flex items-center gap-2">
+                    <ModeSelector
+                      selectedMode={selectedMode}
+                      onModeChange={handleModeChange}
+                      modes={AVAILABLE_MODES}
+                    />
+                    <ModelSelector
+                      selectedModelId={selectedModelId}
+                      onModelChange={handleModelChange}
+                    />
+                    <ModeExplanationDialog modes={AVAILABLE_MODES} />
+                  </div>
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={isPending || !inputValue.trim() || !currentSessionId}
+                    className="send-btn h-9 w-9 rounded-xl shrink-0"
+                    aria-label="Send message"
+                  >
+                    {isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
-              <Button
-                type="submit"
-                size="icon"
-                disabled={isPending || !inputValue.trim() || !currentSessionId}
-                aria-label="Send message"
-              >
-                {isPending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
             </form>
           </footer>
         </div>

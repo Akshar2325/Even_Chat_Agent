@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlusCircle, MessageSquare, Trash2, Edit3, X, Check } from 'lucide-react';
+import { PlusCircle, MessageSquare, Trash2, Edit3, X, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ChatHistorySidebarProps {
@@ -68,30 +68,30 @@ export function ChatHistorySidebar({
   const sortedSessions = [...chatSessions].sort((a, b) => b.createdAt - a.createdAt);
 
   return (
-    <Sidebar className="border-r md:flex md:flex-col" side="left" collapsible="icon">
-      <SidebarHeader className="p-2">
+    <Sidebar className="border-r border-border/50 md:flex md:flex-col" side="left" collapsible="icon">
+      <SidebarHeader className="p-3">
         <Button
           variant="outline"
           className={cn(
-            "h-8",
+            "h-9 transition-all duration-200",
             sidebarState === "expanded"
-              ? "w-full justify-start gap-2 px-2"
-              : "w-8 justify-center p-0 h-8" 
+              ? "w-full justify-start gap-2 px-3 gradient-primary text-white border-0 hover:opacity-90 hover:text-white shadow-md shadow-primary/20"
+              : "w-9 justify-center p-0 h-9 gradient-primary text-white border-0"
           )}
           onClick={() => onNewChat()}
           title={sidebarState === "collapsed" ? "New Chat" : undefined}
         >
-          <PlusCircle />
-          {sidebarState === "expanded" && <span>New Chat</span>}
+          <PlusCircle className="h-4 w-4" />
+          {sidebarState === "expanded" && <span className="font-medium">New Chat</span>}
         </Button>
       </SidebarHeader>
       <SidebarContent className="p-0">
         <ScrollArea className="h-full">
-          <SidebarMenu className="p-2">
+          <SidebarMenu className="p-2 space-y-0.5">
             {sortedSessions.map((session) => (
-              <SidebarMenuItem key={session.id} className="relative group/menu-item">
+              <SidebarMenuItem key={session.id}>
                 {renamingId === session.id && sidebarState === "expanded" ? (
-                  <div className="flex items-center gap-1 p-1 w-full">
+                  <div className="flex items-center gap-1 p-1 w-full max-w-full z-10 relative bg-background rounded-md">
                     <Input
                       value={newName}
                       onChange={(e) => setNewName(e.target.value)}
@@ -99,14 +99,14 @@ export function ChatHistorySidebar({
                         if (e.key === 'Enter') commitRename();
                         if (e.key === 'Escape') cancelRename();
                       }}
-                      className="h-8 flex-grow bg-background"
+                      className="h-7 w-full bg-background text-sm min-w-0 border-none outline-none focus-visible:ring-0 shadow-none px-1"
                       autoFocus
                     />
-                    <Button variant="ghost" size="icon" onClick={commitRename} className="h-8 w-8">
-                      <Check className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" onClick={commitRename} className="h-6 w-6 shrink-0 text-primary hover:text-primary/80">
+                      <Check className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={cancelRename} className="h-8 w-8">
-                      <X className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" onClick={cancelRename} className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 ) : (
@@ -114,42 +114,50 @@ export function ChatHistorySidebar({
                     <SidebarMenuButton
                       onClick={() => handleSelectSession(session.id)}
                       isActive={session.id === currentSessionId}
-                      className="w-full text-left pr-16" // Added padding-right to make space for absolute buttons
+                      className={cn(
+                        "transition-all duration-200",
+                        session.id === currentSessionId && "sidebar-item-active"
+                      )}
                       tooltip={{ children: session.name, side: 'right', align: 'start' }}
                     >
-                      <div className="flex flex-1 items-center gap-2 overflow-hidden min-w-0">
-                         <MessageSquare />
-                         {sidebarState === "expanded" && <span className="truncate">{session.name}</span>}
-                      </div>
+                      <MessageSquare />
+                      {sidebarState === "expanded" && <span>{session.name}</span>}
                     </SidebarMenuButton>
                     
                     {sidebarState === "expanded" && (
-                       <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex shrink-0 items-center">
-                         <Button asChild variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startRename(session);}} className="h-7 w-7 p-1">
-                           <span><Edit3 className="h-4 w-4" /></span>
-                         </Button>
-                         <Dialog>
-                            <DialogTrigger asChild>
-                              <Button asChild variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="h-7 w-7 p-1 hover:bg-destructive/10 hover:text-destructive">
-                                <span><Trash2 className="h-4 w-4" /></span>
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Delete Chat?</DialogTitle>
-                              </DialogHeader>
-                              <p>Are you sure you want to delete the chat "{session.name}"?</p>
-                              <DialogFooter>
-                                 <DialogClose asChild>
-                                  <Button variant="outline">Cancel</Button>
-                                 </DialogClose>
-                                 <DialogClose asChild>
-                                  <Button variant="destructive" onClick={() => onDeleteSession(session.id)}>Delete</Button>
-                                 </DialogClose>
-                              </DialogFooter>
-                            </DialogContent>
-                         </Dialog>
-                      </div>
+                       <div className={cn(
+                          "absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5",
+                          session.id === currentSessionId 
+                            ? "opacity-100" 
+                            : "opacity-0 group-hover/menu-item:opacity-100 focus-within:opacity-100"
+                        )}>
+                         <div className="flex items-center rounded-md bg-background/80 backdrop-blur-sm shadow-sm border border-border/40 p-0.5">
+                           <Button asChild variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); startRename(session);}} className="h-6 w-6 p-1 hover:bg-primary/10">
+                             <span><Edit3 className="h-3 w-3" /></span>
+                           </Button>
+                           <Dialog>
+                              <DialogTrigger asChild>
+                                <Button asChild variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} className="h-6 w-6 p-1 hover:bg-destructive/10 hover:text-destructive">
+                                  <span><Trash2 className="h-3 w-3" /></span>
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-md">
+                                <DialogHeader>
+                                  <DialogTitle>Delete Chat?</DialogTitle>
+                                </DialogHeader>
+                                <p className="text-sm text-muted-foreground">Are you sure you want to delete &quot;{session.name}&quot;? This action cannot be undone.</p>
+                                <DialogFooter>
+                                   <DialogClose asChild>
+                                    <Button variant="outline" size="sm">Cancel</Button>
+                                   </DialogClose>
+                                   <DialogClose asChild>
+                                    <Button variant="destructive" size="sm" onClick={() => onDeleteSession(session.id)}>Delete</Button>
+                                   </DialogClose>
+                                </DialogFooter>
+                              </DialogContent>
+                           </Dialog>
+                         </div>
+                       </div>
                     )}
                   </>
                 )}

@@ -1,17 +1,10 @@
 export type AiModeId =
   | "general"
   | "fixgrammar"
-  | "summarize"
   | "formalize"
-  | "fixCode"
-  | "optimizeCode"
-  | "lintCode"
-  | "explainCodeStepByStep"
   | "analyzeTimeComplexity"
+  | "explainCodeStepByStep"
   | "suggestDesignPattern"
-  | "translateCode"
-  | "generatePseudocode"
-  | "suggestDockerfile"
   | "gitAssistant"
   | "commitMessageFormatter"
   | "improvePrompt";
@@ -27,7 +20,9 @@ export interface ChatMessage {
   id: string;
   sender: "user" | "ai";
   content: string;
+  reasoning?: string;
   mode?: AiModeId;
+  modelId?: string;
   timestamp: number;
 }
 
@@ -36,5 +31,6 @@ export interface ChatSession {
   name: string;
   messages: ChatMessage[];
   createdAt: number;
-  mode?: AiModeId; // Default mode for the session
+  mode?: AiModeId;
+  modelId?: string;
 }
