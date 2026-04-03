@@ -116,7 +116,8 @@ export default function ModeChatPage() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState<string>("");
   const [selectedMode, setSelectedMode] = useState<AiModeId>("general");
-  const [selectedModelId, setSelectedModelId] = useState<string>(DEFAULT_MODEL_ID);
+  const [selectedModelId, setSelectedModelId] =
+    useState<string>(DEFAULT_MODEL_ID);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -160,7 +161,7 @@ export default function ModeChatPage() {
       setInputValue("");
       setSelectedMode(mode.id);
     },
-    []
+    [],
   );
 
   useEffect(() => {
@@ -177,13 +178,13 @@ export default function ModeChatPage() {
           ) {
             setCurrentSessionId(storedCurrentId);
             const currentSession = parsedSessions.find(
-              (s) => s.id === storedCurrentId
+              (s) => s.id === storedCurrentId,
             );
             setSelectedMode(currentSession?.mode || "general");
             setSelectedModelId(currentSession?.modelId || DEFAULT_MODEL_ID);
           } else {
             const sortedSessions = [...parsedSessions].sort(
-              (a, b) => b.createdAt - a.createdAt
+              (a, b) => b.createdAt - a.createdAt,
             );
             setCurrentSessionId(sortedSessions[0].id);
             setSelectedMode(sortedSessions[0].mode || "general");
@@ -234,7 +235,7 @@ export default function ModeChatPage() {
     if (currentSessionId === sessionId) {
       if (newSessions.length > 0) {
         const sortedRemaining = [...newSessions].sort(
-          (a, b) => b.createdAt - a.createdAt
+          (a, b) => b.createdAt - a.createdAt,
         );
         setCurrentSessionId(sortedRemaining[0].id);
         setSelectedMode(sortedRemaining[0].mode || "general");
@@ -247,8 +248,8 @@ export default function ModeChatPage() {
   const handleRenameSession = (sessionId: string, newName: string) => {
     setChatSessions((prevSessions) =>
       prevSessions.map((s) =>
-        s.id === sessionId ? { ...s, name: newName } : s
-      )
+        s.id === sessionId ? { ...s, name: newName } : s,
+      ),
     );
   };
 
@@ -268,9 +269,14 @@ export default function ModeChatPage() {
     setChatSessions((prevSessions) =>
       prevSessions.map((s) =>
         s.id === currentSessionId
-          ? { ...s, messages: [...s.messages, userMessage], mode: selectedMode, modelId: selectedModelId }
-          : s
-      )
+          ? {
+              ...s,
+              messages: [...s.messages, userMessage],
+              mode: selectedMode,
+              modelId: selectedModelId,
+            }
+          : s,
+      ),
     );
 
     const currentInput = inputValue;
@@ -281,7 +287,7 @@ export default function ModeChatPage() {
         const stream = await handleAiInteractionStream(
           currentInput.trim(),
           selectedMode,
-          selectedModelId
+          selectedModelId,
         );
 
         const aiMessageId = "ai-" + Date.now();
@@ -299,8 +305,8 @@ export default function ModeChatPage() {
           prevSessions.map((s) =>
             s.id === currentSessionId
               ? { ...s, messages: [...s.messages, initialAiMessage] }
-              : s
-          )
+              : s,
+          ),
         );
 
         let fullRawContent = "";
@@ -312,18 +318,18 @@ export default function ModeChatPage() {
 
           const thinkStartIdx = fullRawContent.indexOf("<think>");
           if (thinkStartIdx !== -1) {
-             const parts = fullRawContent.split("<think>");
-             const afterThink = parts[1] || "";
-             
-             const thinkEndIdx = afterThink.indexOf("</think>");
-             if (thinkEndIdx !== -1) {
-                const subParts = afterThink.split("</think>");
-                displayReasoning = subParts[0];
-                displayContent = parts[0] + (subParts[1] || "");
-             } else {
-                displayReasoning = afterThink;
-                displayContent = parts[0];
-             }
+            const parts = fullRawContent.split("<think>");
+            const afterThink = parts[1] || "";
+
+            const thinkEndIdx = afterThink.indexOf("</think>");
+            if (thinkEndIdx !== -1) {
+              const subParts = afterThink.split("</think>");
+              displayReasoning = subParts[0];
+              displayContent = parts[0] + (subParts[1] || "");
+            } else {
+              displayReasoning = afterThink;
+              displayContent = parts[0];
+            }
           }
 
           setChatSessions((prevSessions) =>
@@ -331,18 +337,22 @@ export default function ModeChatPage() {
               if (s.id !== currentSessionId) return s;
               return {
                 ...s,
-                messages: s.messages.map((m) => 
-                  m.id === aiMessageId ? 
-                    { ...m, content: displayContent, reasoning: displayReasoning || undefined } 
-                    : m
-                )
+                messages: s.messages.map((m) =>
+                  m.id === aiMessageId
+                    ? {
+                        ...m,
+                        content: displayContent,
+                        reasoning: displayReasoning || undefined,
+                      }
+                    : m,
+                ),
               };
-            })
+            }),
           );
         }
 
         const currentSession = chatSessions.find(
-          (s) => s.id === currentSessionId
+          (s) => s.id === currentSessionId,
         );
         const modeName = getModeById(selectedMode)?.name || "Chat";
         const isDefaultName =
@@ -350,7 +360,7 @@ export default function ModeChatPage() {
           (currentSession.name === "Welcome Chat" ||
             currentSession.name.startsWith(`${modeName} Chat - `) ||
             AVAILABLE_MODES.some((m) =>
-              currentSession.name.startsWith(`${m.name} Chat - `)
+              currentSession.name.startsWith(`${m.name} Chat - `),
             ));
 
         if (
@@ -365,7 +375,7 @@ export default function ModeChatPage() {
             (firstUserMessage.length > 25 ? "..." : "");
           handleRenameSession(
             currentSessionId,
-            `${modeName}: ${newNamePrefix}`
+            `${modeName}: ${newNamePrefix}`,
           );
         }
       } catch (error) {
@@ -386,8 +396,8 @@ export default function ModeChatPage() {
           prevSessions.map((s) =>
             s.id === currentSessionId
               ? { ...s, messages: [...s.messages, systemErrorMessage] }
-              : s
-          )
+              : s,
+          ),
         );
       }
     });
@@ -399,7 +409,9 @@ export default function ModeChatPage() {
     const currentSession = chatSessions.find((s) => s.id === currentSessionId);
     if (!currentSession) return;
 
-    const messageIndex = currentSession.messages.findIndex((m) => m.id === messageId);
+    const messageIndex = currentSession.messages.findIndex(
+      (m) => m.id === messageId,
+    );
     if (messageIndex === -1) return;
 
     let lastUserMessage = "";
@@ -420,11 +432,11 @@ export default function ModeChatPage() {
               messages: s.messages.map((m) =>
                 m.id === messageId
                   ? { ...m, content: "...", reasoning: undefined }
-                  : m
+                  : m,
               ),
             }
-          : s
-      )
+          : s,
+      ),
     );
 
     startTransition(async () => {
@@ -433,7 +445,7 @@ export default function ModeChatPage() {
           lastUserMessage,
           selectedMode,
           selectedModelId,
-          modifier
+          modifier,
         );
 
         let fullRawContent = "";
@@ -445,18 +457,18 @@ export default function ModeChatPage() {
 
           const thinkStartIdx = fullRawContent.indexOf("<think>");
           if (thinkStartIdx !== -1) {
-             const parts = fullRawContent.split("<think>");
-             const afterThink = parts[1] || "";
-             
-             const thinkEndIdx = afterThink.indexOf("</think>");
-             if (thinkEndIdx !== -1) {
-                const subParts = afterThink.split("</think>");
-                displayReasoning = subParts[0];
-                displayContent = parts[0] + (subParts[1] || "");
-             } else {
-                displayReasoning = afterThink;
-                displayContent = parts[0];
-             }
+            const parts = fullRawContent.split("<think>");
+            const afterThink = parts[1] || "";
+
+            const thinkEndIdx = afterThink.indexOf("</think>");
+            if (thinkEndIdx !== -1) {
+              const subParts = afterThink.split("</think>");
+              displayReasoning = subParts[0];
+              displayContent = parts[0] + (subParts[1] || "");
+            } else {
+              displayReasoning = afterThink;
+              displayContent = parts[0];
+            }
           }
 
           setChatSessions((prevSessions) =>
@@ -464,13 +476,17 @@ export default function ModeChatPage() {
               if (s.id !== currentSessionId) return s;
               return {
                 ...s,
-                messages: s.messages.map((m) => 
-                  m.id === messageId ? 
-                    { ...m, content: displayContent, reasoning: displayReasoning || undefined } 
-                    : m
-                )
+                messages: s.messages.map((m) =>
+                  m.id === messageId
+                    ? {
+                        ...m,
+                        content: displayContent,
+                        reasoning: displayReasoning || undefined,
+                      }
+                    : m,
+                ),
               };
-            })
+            }),
           );
         }
       } catch (error) {
@@ -482,12 +498,17 @@ export default function ModeChatPage() {
                   ...s,
                   messages: s.messages.map((m) =>
                     m.id === messageId
-                      ? { ...m, content: "Sorry, I couldn't process the retry. Please try again.", reasoning: undefined }
-                      : m
+                      ? {
+                          ...m,
+                          content:
+                            "Sorry, I couldn't process the retry. Please try again.",
+                          reasoning: undefined,
+                        }
+                      : m,
                   ),
                 }
-              : s
-          )
+              : s,
+          ),
         );
       }
     });
@@ -498,8 +519,8 @@ export default function ModeChatPage() {
     if (currentSessionId) {
       setChatSessions((prevSessions) =>
         prevSessions.map((s) =>
-          s.id === currentSessionId ? { ...s, mode: newMode } : s
-        )
+          s.id === currentSessionId ? { ...s, mode: newMode } : s,
+        ),
       );
     }
   };
@@ -509,8 +530,8 @@ export default function ModeChatPage() {
     if (currentSessionId) {
       setChatSessions((prevSessions) =>
         prevSessions.map((s) =>
-          s.id === currentSessionId ? { ...s, modelId: newModelId } : s
-        )
+          s.id === currentSessionId ? { ...s, modelId: newModelId } : s,
+        ),
       );
     }
   };
@@ -547,8 +568,12 @@ export default function ModeChatPage() {
                   <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-background" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-bold gradient-text leading-tight">Even</h1>
-                  <p className="text-[10px] text-muted-foreground leading-tight">AI Chat Agent</p>
+                  <h1 className="text-lg font-bold gradient-text leading-tight">
+                    Even
+                  </h1>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    AI Chat Agent
+                  </p>
                 </div>
               </div>
             </div>
@@ -561,22 +586,35 @@ export default function ModeChatPage() {
               className="h-full px-4 py-2"
               ref={scrollAreaRef as React.RefObject<HTMLDivElement>}
             >
-              <div className="max-w-2xl mx-auto space-y-1 pb-4">
+              <div className="max-w-4xl mx-auto space-y-1 pb-4">
                 {messages.map((msg) => {
-                  const isGenerating = msg.sender === "ai" && !msg.content && !msg.reasoning && isPending;
+                  const isGenerating =
+                    msg.sender === "ai" &&
+                    !msg.content &&
+                    !msg.reasoning &&
+                    isPending;
                   if (isGenerating) {
                     return (
-                      <div key={msg.id} className="flex justify-start items-start gap-3 py-3 animate-message-in">
+                      <div
+                        key={msg.id}
+                        className="flex justify-start items-start gap-3 py-3 animate-message-in"
+                      >
                         <div className="h-9 w-9 shrink-0 relative">
                           <Image
                             src="/icon.png"
                             alt="AI Icon"
                             fill
-                            style={{ objectFit: 'contain' }}
+                            style={{ objectFit: "contain" }}
                             className="rounded-lg"
                           />
                         </div>
-                        <div className="ai-message-bubble rounded-2xl px-5 py-4 shadow-sm max-w-xl">
+                        <div
+                          className={
+                            msg.id.startsWith("ai-init-")
+                              ? "ai-message-bubble rounded-2xl px-4 py-3 shadow-sm w-fit max-w-2xl"
+                              : "ai-message-bubble rounded-2xl px-5 py-4 shadow-sm w-full max-w-3xl"
+                          }
+                        >
                           <div className="thinking-dots">
                             <span></span>
                             <span></span>
@@ -586,7 +624,13 @@ export default function ModeChatPage() {
                       </div>
                     );
                   }
-                  return <ChatMessageItem key={msg.id} message={msg} onRetry={handleRetry} />;
+                  return (
+                    <ChatMessageItem
+                      key={msg.id}
+                      message={msg}
+                      onRetry={handleRetry}
+                    />
+                  );
                 })}
                 {!currentSessionId &&
                   !isPending &&
@@ -596,7 +640,9 @@ export default function ModeChatPage() {
                         <MessageSquare size={32} className="text-primary" />
                       </div>
                       <p className="text-lg font-medium">No chats yet</p>
-                      <p className="text-sm mt-1">Start a new conversation to get going!</p>
+                      <p className="text-sm mt-1">
+                        Start a new conversation to get going!
+                      </p>
                     </div>
                   )}
               </div>
@@ -605,10 +651,7 @@ export default function ModeChatPage() {
 
           {/* Footer / Input Area */}
           <footer className="px-4 pb-4 pt-3 border-t border-border/50 bg-background/80 backdrop-blur-xl sticky bottom-0 z-10">
-            <form
-              onSubmit={handleSubmit}
-              className="max-w-2xl mx-auto"
-            >
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
               {/* Input */}
               <div className="input-glow rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-200 shadow-sm">
                 <Textarea
@@ -646,7 +689,9 @@ export default function ModeChatPage() {
                   <Button
                     type="submit"
                     size="icon"
-                    disabled={isPending || !inputValue.trim() || !currentSessionId}
+                    disabled={
+                      isPending || !inputValue.trim() || !currentSessionId
+                    }
                     className="send-btn h-9 w-9 rounded-xl shrink-0"
                     aria-label="Send message"
                   >
