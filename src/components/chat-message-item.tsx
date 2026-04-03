@@ -99,23 +99,42 @@ export function ChatMessageItem({ message, onRetry }: ChatMessageItemProps) {
             </div>
           )}
 
-          {message.reasoning && (
+          {(message.reasoning || message.content === "...") && (
             <div className="mb-3">
               <button
-                onClick={() => setShowReasoning(!showReasoning)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/10 px-2 py-1.5 rounded-md w-fit border border-purple-500/20"
+                type="button"
+                onClick={() => setShowReasoning((current) => !current)}
+                className="inline-flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-300 transition-colors hover:bg-purple-500/15"
                 aria-expanded={showReasoning}
               >
                 <Brain className="h-3.5 w-3.5" />
-                <span>Thinking Process</span>
+                <span>
+                  {message.content === "..." ? "Thinking" : "Thinking process"}
+                </span>
+                {message.content === "..." && (
+                  <span className="inline-flex items-center gap-1">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </span>
+                )}
                 {showReasoning ? (
-                  <ChevronUp className="h-3.5 w-3.5 ml-1 opacity-70" />
+                  <ChevronUp className="h-3.5 w-3.5 opacity-70" />
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5 ml-1 opacity-70" />
+                  <ChevronDown className="h-3.5 w-3.5 opacity-70" />
                 )}
               </button>
-              {showReasoning && (
-                <div className="mt-2 text-[13px] leading-relaxed text-muted-foreground bg-muted/30 border border-border/50 rounded-lg px-3 py-2.5 whitespace-pre-wrap animate-accordion-down overflow-y-auto max-h-[250px] scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+              {showReasoning && message.reasoning && (
+                <div className="mt-2 max-h-[220px] overflow-y-auto whitespace-pre-wrap rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5 text-[13px] leading-relaxed text-muted-foreground scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                   {message.reasoning}
                 </div>
               )}

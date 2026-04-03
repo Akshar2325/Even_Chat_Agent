@@ -128,6 +128,17 @@ export default function ModeChatPage() {
     return currentSession ? currentSession.messages : [];
   }, [chatSessions, currentSessionId]);
 
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    requestAnimationFrame(() => {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+          top: scrollAreaRef.current.scrollHeight,
+          behavior,
+        });
+      }
+    });
+  }, []);
+
   const handleNewChat = useCallback(
     (isInitial: boolean = false, modeId: AiModeId = "general") => {
       const newSessionId = "session-" + Date.now();
@@ -212,13 +223,14 @@ export default function ModeChatPage() {
   }, [chatSessions, currentSessionId]);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    scrollToBottom("smooth");
+  }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    if (currentSessionId) {
+      scrollToBottom("auto");
     }
-  }, [messages]);
+  }, [currentSessionId, scrollToBottom]);
 
   const handleSelectSession = (sessionId: string) => {
     const session = chatSessions.find((s) => s.id === sessionId);
